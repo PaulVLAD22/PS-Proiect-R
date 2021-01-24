@@ -5,7 +5,8 @@ nrMinVf=1
 #Nr max Varfuri
 nrMaxVf=10
 # Lista de restrictii
-restrictions=list('Must be Clockwise','Nothing')
+forma=list('Forma 1','Forma 2','Forma 3','Forma 4',
+                  'Forma 5')
 
 
 jsCode <- '
@@ -171,15 +172,16 @@ function shp4(k,r,s){
 }
 shinyjs.draw = function(params) {
   var defaultParams = {
-    id :"name",
     nrVfInput:5,
     razaInput:5,
-    restrictieinput:"Nothing"
+    formaInput:"Forma 1"
   };
   
   params = shinyjs.getParams(params, defaultParams);
   
-  document.getElementById("name").innerHTML+=params.nrVfInput;
+  document.getElementById("nrVfHistory").innerHTML+=params.nrVfInput+", ";
+  document.getElementById("razaHistory").innerHTML+=params.razaInput+", ";
+  document.getElementById("formaHistory").innerHTML+=params.formaInput+", ";
   //shp4(3, width/2-25, 2);
   // nu merge sh4 tre sa fac ceva conexiune cu output
   noLoop();
@@ -193,15 +195,17 @@ ui <- fluidPage(
   useShinyjs(),
   extendShinyjs(text = jsCode, functions = c("draw")),
   includeHTML("index.html"),
-  p(id="name",'papa'),
   headerPanel('Chaos Game'),
   sidebarPanel(
     numericInput('nrVfInput', 'Numar Varfuri:', value=5,
                 min=nrMinVf,max=nrMaxVf),
     numericInput('razaInput', 'Raza Cercului:', value=5),
-    selectInput('restrictieInput', 'Alege Restrictia:',
-                restrictions),
-    actionButton("button", "Go")
+    selectInput('formaInput', 'Alege Forma:',
+                forma),
+    actionButton("button", "Go"),
+    p(id="nrVfHistory",'Numar Varfuri:'),
+    p(id="razaHistory",'Raze:'),
+    p(id="formaHistory","Forma:")
   ),
   mainPanel(
     plotOutput('plot1')
@@ -212,7 +216,7 @@ server <- function(input,output
 ) {
   observeEvent(input$button, {
     js$draw(input$nrVfInput, input$razaInput,
-                     input$restrictieInput)
+                     input$formaInput)
   })
   output$plot1<-renderPlot({
     hist(rnorm(input$nrVfInput))
