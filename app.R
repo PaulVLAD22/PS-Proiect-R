@@ -64,7 +64,7 @@ ui <- fluidPage(
 #aici e logica
 server <- function(input,output
 ) {
-  #cand apas pe butonul #button se executa functia shinyjs.draw cu actuaele inputuri
+  #cand apas pe butonul #button se executa functia shinyjs.draw cu actualele inputuri
     observeEvent(input$button, {
         js$addHistory(input$nrVfInput, input$razaInput,
                 input$formaInput)
@@ -94,6 +94,9 @@ function setup() {
   pct = [width/2, height/2];
 }
 
+/* Functia shp1 creaza triunghiul Sierpinski in urmatorul mod: incepand din mijloc, 
+se alege aleator un varf si punem un alt punct la jumatatea distantei dintre punctul
+initial si varful ales. */
 function shp1(k,r,s){
   let step = 360 / k;
   let angle = 90;
@@ -124,6 +127,9 @@ function shp1(k,r,s){
   }
   
 }
+
+/* Functia shp2 creaza un "fulg", astfel: Incepand din mijloc, se alege aleator un varf spre care sa 
+mergem jumatate din distanta, insa varful ales trebuie sa fie diferit de cel precedent ales. */
 function shp2(k,r,s){
   let step = 360 / k;
   let angle = 90;
@@ -160,6 +166,8 @@ function shp2(k,r,s){
   }
 }
 
+/* Functia shp3 creaza un "fulg", astfel: Incepand din mijloc, se alege aleator un varf spre
+care sa mergem jumatate din distanta, insa varful ales trebuie sa nu fie la stanga celui ales precedent. */
 function shp3(k,r,s){
   let step = 360 / k;
   let angle = 90;
