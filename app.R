@@ -1,6 +1,9 @@
 library(shiny)
 #librarie pt js
 library(shinyjs)
+library(sketch)
+library(shinydashboard)
+library(rmarkdown)
 
 #Nr minim varfuri
 nrMinVf=1
@@ -14,13 +17,79 @@ numeElevi=list('Munteanu Vlad Paul','Alexandru Oana','Mihai Catalin','Alex')
 
 #cod javascript 
 jsCode <- '
-var xVf = [];
+//functia shinyjs care poate fi apelata din R
+shinyjs.addHistory = function(params) {
+  var defaultParams = {
+    nrVfInput:5,
+    razaInput:5,
+    formaInput:"Forma 1"
+  };
+  
+  params = shinyjs.getParams(params, defaultParams);
+  
+  document.getElementById("nrVfHistory").innerHTML+=params.nrVfInput+", ";
+  document.getElementById("razaHistory").innerHTML+=params.razaInput+", ";
+  document.getElementById("formaHistory").innerHTML+=params.formaInput+", ";
+  
+}'
+
+
+# aici e interfata
+ui <- fluidPage(
+    useShinyjs(),
+    #aici apar functiile shinyjs din javascript(singurele functii care pot fi chemate din R)
+    extendShinyjs(text = jsCode, functions = c("addHistory")),
+    
+    headerPanel('Chaos Game'),
+    h5(numeElevi),
+    sidebarLayout(
+    sidebarPanel(
+      #inputurile
+        numericInput('nrVfInput', 'Numar Varfuri:', value=3,
+                     min=nrMinVf,max=nrMaxVf),
+        numericInput('razaInput', 'Raza Cercului:', value=175),
+        numericInput('formaInput','Forma:',min =1,max=3,value=1),
+        numericInput('stepInput','Step:',value=2),
+        numericInput('nrRepetInput','Numar repetari:',value=5000),
+        # la apasarea butonului se executa js
+        actionButton("button", "Go"),
+        #istoricul datelor rulate (se updateaza din js)
+        p(id="nrVfHistory",'Numar Varfuri:'),
+        p(id="razaHistory",'Raze:'),
+        p(id="formaHistory","Forma:"),
+    ),
+    #outputul
+    mainPanel(
+      htmlOutput("chaosGame")
+    )))
+
+#aici e logica
+server <- function(input,output
+) {
+  #cand apas pe butonul #button se executa functia shinyjs.draw cu actuaele inputuri
+    observeEvent(input$button, {
+        js$addHistory(input$nrVfInput, input$razaInput,
+                input$formaInput)
+      #luam valorile
+      nrVf=input$nrVfInput
+      forma=input$formaInput
+      raza=input$razaInput
+      step=input$stepInput
+      nrRepet=input$nrRepetInput
+      output$chaosGame<- renderUI(tags$html(
+        tags$body(
+          singleton(tags$head(tags$script(src="https://cdn.jsdelivr.net/npm/p5@1.2.0/lib/p5.js")))
+          ,singleton(tags$head(tags$script(paste('var xVf = [];
 var yVf = [];
 var pct = [];
-var reps = 50000;
+var reps = ',nrRepet,';
+width=400;
+height=400;
+
+console.log(pct)
 
 function setup() {
-  createCanvas(600, 600);
+  createCanvas(400, 400);
   
   angleMode(DEGREES);
   
@@ -34,7 +103,7 @@ function shp1(k,r,s){
   background(0);
   fill(0,255,0);
   
-  for(let i = 1; i<=k;i++){
+  for(let i = 1; i!=k+1;i++){
     let x = width/2 + (r * cos(angle));
     let y = height/2 - (r * sin(angle));
     
@@ -47,7 +116,7 @@ function shp1(k,r,s){
   
   fill(255);
   stroke(255);
-  for(let i = 1; i <= reps; i++){
+  for(let i = 1; i != reps+1; i++){
     point(pct[0],pct[1]);
     
     let rVf = floor(random(1,k+1));
@@ -55,8 +124,8 @@ function shp1(k,r,s){
     pct[0] = ((s-1)*pct[0]+xVf[rVf])/s;
     pct[1] = ((s-1)*pct[1]+yVf[rVf])/s;
   }
+  
 }
-
 function shp2(k,r,s){
   let step = 360 / k;
   let angle = 90;
@@ -64,7 +133,7 @@ function shp2(k,r,s){
   background(0);
   fill(0,255,0);
   
-  for(let i = 1; i<=k;i++){
+  for(let i = 1; i!=k+1;i++){
     let x = width/2 + (r * cos(angle));
     let y = height/2 - (r * sin(angle));
     
@@ -78,7 +147,7 @@ function shp2(k,r,s){
   fill(255);
   stroke(255);
   let prevVf = 0;
-  for(let i = 1; i <= reps; i++){
+  for(let i = 1; i != reps+1; i++){
     //ellipse(pct[0],pct[1], 2, 2);
     point(pct[0], pct[1]);
     
@@ -100,7 +169,7 @@ function shp3(k,r,s){
   background(0);
   fill(0,255,0);
   
-  for(let i = 1; i<=k;i++){
+  for(let i = 1; i!=k+1;i++){
     let x = width/2 + (r * cos(angle));
     let y = height/2 - (r * sin(angle));
     
@@ -114,7 +183,7 @@ function shp3(k,r,s){
   fill(255);
   stroke(255);
   let prevVf = 0;
-  for(let i = 1; i <= reps; i++){
+  for(let i = 1; i != reps+1; i++){
     //ellipse(pct[0],pct[1], 2, 2);
     point(pct[0], pct[1]);
     
@@ -133,107 +202,16 @@ function shp3(k,r,s){
   }
 }
 
-function shp4(k,r,s){
-  let step = 360 / k;
-  let angle = 90;
-  
-  background(0);
-  fill(0,255,0);
-  
-  for(let i = 1; i<=k;i++){
-    let x = width/2 + (r * cos(angle));
-    let y = height/2 - (r * sin(angle));
-    
-    xVf[i] = x;
-    yVf[i] = y;
-    
-    ellipse(x,y,16,16);
-    angle += step;
-  }
-  
-  fill(255);
-  stroke(255);
-  let prevVf = 0;
-  for(let i = 1; i <= reps; i++){
-    //ellipse(pct[0],pct[1], 2, 2);
-    point(pct[0], pct[1]);
-    
-    let rVf = floor(random(1,k+1));
-    
-    if(prevVf-2 == 0) leftVf = k;
-    else if(prevVf-2 < 0) leftVf = k-1;
-    else leftVf = prevVf-2;
-    
-    while(rVf == leftVf){
-      rVf = floor(random(1,k+1));
-    }
-    prevVf = rVf;
-    
-    pct[0] = ((s-1)*pct[0]+xVf[rVf])/s;
-    pct[1] = ((s-1)*pct[1]+yVf[rVf])/s;
-  }
-}
-//functia shinyjs care poate fi apelata din R
-shinyjs.draw = function(params) {
-  var defaultParams = {
-    nrVfInput:5,
-    razaInput:5,
-    formaInput:"Forma 1"
-  };
-  
-  params = shinyjs.getParams(params, defaultParams);
-  
-  document.getElementById("nrVfHistory").innerHTML+=params.nrVfInput+", ";
-  document.getElementById("razaHistory").innerHTML+=params.razaInput+", ";
-  document.getElementById("formaHistory").innerHTML+=params.formaInput+", ";
-  //shp4(3, width/2-25, 2);
-  // nu merge sh4 tre sa fac ceva conexiune cu output
-  noLoop();
-  
-}'
 
 
-# aici e interfata
-ui <- fluidPage(
-    theme="style.css",
-    includeHTML("index.html"),
-    useShinyjs(),
-    #aici apar functiile shinyjs din javascript(singurele functii care pot fi chemate din R)
-    extendShinyjs(text = jsCode, functions = c("draw","setup")),
-    headerPanel('Chaos Game'),
-    h5(numeElevi),
-    sidebarPanel(
-        numericInput('nrVfInput', 'Numar Varfuri:', value=5,
-                     min=nrMinVf,max=nrMaxVf),
-        numericInput('razaInput', 'Raza Cercului:', value=5),
-        selectInput('formaInput', 'Alege Forma:',
-                    forma),
-        # la apasarea butonului se executa js
-        actionButton("button", "Go"),
-        #istoricul datelor rulate (se updateaza din js)
-        p(id="nrVfHistory",'Numar Varfuri:'),
-        p(id="razaHistory",'Raze:'),
-        p(id="formaHistory","Forma:"),
-    ),
-    mainPanel(
-      #aici trebuie pus outputul
-        plotOutput('plot1'),
-        #in acest div putem pune ce creeaza js
-        tags$div(id="chaosGame")
-    ))
-#aici e logica
-server <- function(input,output
-) {#observe event e pt js
-  #cand apas pe butonul #button se executa functia shinyjs.draw cu parametrii dati
-    observeEvent(input$button, {
-        js$draw(input$nrVfInput, input$razaInput,
-                input$formaInput)
-    })
-    # output$numeElementDinOutput = ce sa se puna in elementul de output
-    output$plot1<-renderPlot({
-        hist(rnorm(input$nrVfInput))
+function draw() {
+  shp',forma,'(',nrVf,',',raza,',',step,');
+  
+}',sep=""))))
+          ,singleton(tags$div(id = 'divCanvas2', style = 'width:auto; height:auto')))))
     })
 }
+
 
 #basic
 shinyApp(ui = ui, server = server)
