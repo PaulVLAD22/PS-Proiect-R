@@ -9,11 +9,9 @@ library(rmarkdown)
 nrMinVf=1
 #Nr max Varfuri
 nrMaxVf=10
-# Lista de forme 
-forma=list('Forma 1','Forma 2','Forma 3','Forma 4')
 
 #numele noastre
-numeElevi=list('Munteanu Vlad Paul','Alexandru Oana','Mihai Catalin','Alex')
+numeElevi=list('Munteanu Vlad Paul','Alexandru Oana','Mihai Catalin','Alex Stefan')
 
 #cod javascript 
 jsCode <- '
