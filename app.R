@@ -10,7 +10,7 @@ nrMinVf=1
 nrMaxVf=10
 
 #numele noastre
-numeElevi=list('Grupa 242 - ','Munteanu Vlad Paul','Alexandru Oana','Mihai Catalin','Alex Stefan')
+numeElevi=list('Grupa 242 : ','Munteanu Vlad Paul -',' Oana Alexandru Andrei-',' Burta Mihai Catalin-','Bordei Alex Stefan')
 
 #cod javascript 
 jsCode <- '
