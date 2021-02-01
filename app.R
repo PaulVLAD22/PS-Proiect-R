@@ -10,7 +10,7 @@ nrMinVf=1
 nrMaxVf=10
 
 #numele noastre
-numeElevi=list('Munteanu Vlad Paul','Alexandru Oana','Mihai Catalin','Alex Stefan')
+numeElevi=list('Grupa 242 - ','Munteanu Vlad Paul','Alexandru Oana','Mihai Catalin','Alex Stefan')
 
 #cod javascript 
 jsCode <- '
@@ -57,8 +57,8 @@ ui <- fluidPage(
                    min=nrMinVf,max=nrMaxVf),
       numericInput('razaInput', 'Raza Cercului:', value=175),
       numericInput('formaInput','Forma:',min =1,max=3,value=1),
-      numericInput('stepInput','Step:',value=2),
-      numericInput('nrRepetInput','Numar repetari:',value=5000),
+      numericInput('stepInput','Step:',value=2,min=2,max=10),
+      numericInput('nrRepetInput','Numar repetari:',value=5000,max=50000),
       # la apasarea butonului se executa programu
       actionButton("button", "Go"),
       #istoricul datelor rulate (se updateaza din js)
@@ -100,7 +100,10 @@ server <- function(input,output
 var yVf = [];
 var pct = [];
 var reps = ',nrRepet,';
+var width=400;
+var height=400
 var pct = [width/2, height/2];
+
 console.log(pct)
 function setup() {
   createCanvas(400, 400);
