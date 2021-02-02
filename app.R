@@ -1,6 +1,8 @@
 library(shiny)
+
 #librarie pt js
 library(shinyjs)
+
 library(shinydashboard)
 library(rmarkdown)
 
@@ -50,6 +52,7 @@ ui <- fluidPage(
   extendShinyjs(text = jsCode, functions = c("addHistory")),
   
   headerPanel('Chaos Game'),
+  #numele noastre
   h5(numeElevi),
     sidebarPanel(
       #inputurile
@@ -85,6 +88,7 @@ server <- function(input,output
     raza=input$razaInput
     step=input$stepInput
     nrRepet=input$nrRepetInput
+    # renderUi render-uieste html in tagu output
     output$chaosGame<- renderUI(tags$html(
       tags$style(HTML("
       canvas{
@@ -95,7 +99,10 @@ server <- function(input,output
       }
       }")),
       tags$body(
+        #body : head -> script-ul librairei, head->script generare chaos game, canvas: divCanvas2
+        #punem in body tag head pt a adauga libraria pe care o folosim in tagul script de mai jos
         singleton(tags$head(tags$script(src="https://cdn.jsdelivr.net/npm/p5@1.2.0/lib/p5.js")))
+        
         ,singleton(tags$head(tags$script(paste('var xVf = [];
 var yVf = [];
 var pct = [];
@@ -226,8 +233,8 @@ function shp3(k,r,s){
 }
 function draw() {
   shp',forma,'(',nrVf,',',raza,',',step,');
-  
 }',sep=""))))
+        
         ,singleton(tags$div(id = 'divCanvas2', style = 'width:auto; height:auto;')))))
   })
 }
