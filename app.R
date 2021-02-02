@@ -105,16 +105,21 @@ server <- function(input,output
         
         ,singleton(tags$head(tags$script(paste('var xVf = [];
 var yVf = [];
+// xVf si yVf memoreaza pozitia varfurilor "mari"
 var pct = [];
+// pct memoreaza pozitia punctelor generate
 var reps = ',nrRepet,';
 var width=400;
 var height=400
+//width si height memoreaza dimensiunea canvas-ului
 var pct = [width/2, height/2];
+//pct - pozitia primului punct din Chaos Game
 
 console.log(pct)
 function setup() {
   createCanvas(400, 400);
   
+  //seteaza modul unghiurilor in GRADE
   angleMode(DEGREES);
   width=400;
   height=400;
@@ -124,10 +129,14 @@ function setup() {
 se alege aleator un varf si punem un alt punct la jumatatea distantei dintre punctul
 initial si varful ales. */
 function shp1(k,r,s){
+  //step este cu cat cresc unghiul pentru a aseza pe cerc varfurile
+  //angle este unghiul de start
   let step = 360 / k;
   let angle = 90;
   
+  
   background(0);
+  /fill seteaza culoarea pt desen (verde)
   fill(0,255,0);
   
   for(let i = 1; i!=k+1;i++){
@@ -137,17 +146,22 @@ function shp1(k,r,s){
     xVf[i] = x;
     yVf[i] = y;
     
+    //creez un punct de raza 16 la pozitia (x y)
     ellipse(x,y,16,16);
     angle += step;
   }
   
+  //fill seteaza culoarea pt desen (alb)
   fill(255);
+  //stroke seteaza culoarea liniilor ce urmeaza desenate (alb)
   stroke(255);
   for(let i = 1; i != reps+1; i++){
     point(pct[0],pct[1]);
     
+    // rVf este un varf aleator
     let rVf = floor(random(1,k+1));
     
+    //calculez coordonatele noului punct
     pct[0] = ((s-1)*pct[0]+xVf[rVf])/s;
     pct[1] = ((s-1)*pct[1]+yVf[rVf])/s;
   }
@@ -175,6 +189,7 @@ function shp2(k,r,s){
   
   fill(255);
   stroke(255);
+  //tine minte varful precedent ales
   let prevVf = 0;
   for(let i = 1; i != reps+1; i++){
     //ellipse(pct[0],pct[1], 2, 2);
