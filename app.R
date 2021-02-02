@@ -255,4 +255,4 @@ function draw() {
 }
 
 shinyApp(ui = ui, server = server)
-//ProiectR
+
