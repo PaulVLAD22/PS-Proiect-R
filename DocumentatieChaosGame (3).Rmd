@@ -1,0 +1,363 @@
+---
+title: "Documentatie Chaos Game"
+author: "Munteanu Vlad Paul, Oana Alexandru Andrei, Burta Mihai Catalin, Bordei Alex Stefan"
+date: "2/2/2021"
+output: html_document
+---
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Concept de baza
+[//]: <> (Am folosit &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; pentru a pune indentare la paragrafe)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;În matematică, termenul de "Chaos Game" se referea inițial la o metodă de creare a unui fractal, folosind un poligon și un punct inițial selectat la întâmplare în interiorul acestuia.Fractalul este creat prin crearea iterativă a unei secvențe de puncte, începând cu punctul aleatoriu inițial, în care fiecare punct din secvență este o fracție dată de distanța dintre punctul anterior și unul dintre vârfurile poligonului. Vârful este ales la întâmplare în fiecare iterație. Repetarea acestui proces iterativ , selectarea vârfului la întâmplare pe fiecare iterație și aruncarea primelor câteva puncte din secvență, va produce adesea (dar nu întotdeauna) o formă fractală. Folosind un triunghi regulat și jumatea valorii factorului  va rezulta intr-un triunghi Sierpinski, în timp ce creaarea  aranjamentului corect cu patru puncte și jumatatea factorului va afisa un „Tetraedru Sierpinski”, analogul tridimensional al triunghiului Sierpinski . Deoarece numărul de puncte este mărit la un număr N, aranjamentul formează un Simplex Sierpinski(N-1) -dimensional corespunzător.
+  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Termenul a fost generalizat pentru a se referi la o metodă de generare unui atractor sau a unui punct fix al oricărui sistem de funcții iterat (SFI). Începând cu orice punct x0, iterațiile succesive se formează ca xk + 1 = fr (xk), unde fr este un membru al SFI dat selectat aleatoriu pentru fiecare iterație. Iterațiile converg către punctul fix al SFI. Ori de câte ori x0 aparține atractorului SFI, toate iterațiile xk rămân în interiorul atractorului și, cu probabilitatea 1, formează un set dens în acesta din urmă.
+   
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Metoda „Chaos Game” trasează puncte în ordine aleatorie peste tot atractorul. Acest lucru este în contrast cu alte metode de desenare a fractalilor, care testează fiecare pixel de pe ecran pentru a vedea dacă aparține fractalului. Forma generală a unui fractal poate fi reprezentată rapid prin metoda „Chaos Game”, dar trasatul în detaliu al unelor zone ale fractalului poate fi dificil.
+
+## Documentatie 
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pentru inceput am pus bibliotecile care ne-au fost necesare in creearea proiectului.Biblioteca "shiny" a fost folosita pentru a creea aplicatia web cu cod R, iar biblioteca "shinyjs" a fost folosita pentru a rula secventele de cod JavaScript.
+```{r}
+#library(shiny)
+
+#library(shinyjs)
+
+```
+```{r}
+#Nr minim varfuri
+nrMinVf=1
+
+#Nr max Varfuri
+nrMaxVf=10
+
+#numele noastre
+numeElevi=list('Grupa 242 : ','Munteanu Vlad Paul -',' Oana Alexandru Andrei-',' Burta Mihai Catalin-','Bordei Alex Stefan')
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Urmatoarea seceventa foloseste cod JavaScript si are 2 functionalitati.Prima functionalitate este setarea de valori implicite pentru parametri necesari generarii Chaos Game-ului. A 2 functionalitate este generarea istoricului pentru toate iteratiile Choas Game-ului pe care le facem. 
+```{r}
+jsCode <- '
+//functia shinyjs care poate fi apelata din R
+shinyjs.addHistory = function(params) {
+  var defaultParams = {
+    nrVfInput:5,
+    razaInput:5,
+    formaInput:"Forma 1",
+    stepInput :2,
+    nrRepetInput:5000
+  };
+
+  params = shinyjs.getParams(params, defaultParams);
+  
+  document.getElementById("nrVfHistory").innerHTML+=" "+params.nrVfInput+", ";
+  document.getElementById("razaHistory").innerHTML+=" "+params.razaInput+", ";
+  document.getElementById("formaHistory").innerHTML+=" "+params.formaInput+", ";
+  document.getElementById("stepHistory").innerHTML+=" "+params.stepInput+", ";
+  document.getElementById("nrRepetHistory").innerHTML+=" "+params.nrRepetInput+", ";
+}'
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;In aceasta secventa de cod este generata interfata proiectului. Avem prezenti urmatorii parametri:"Numar varfuri"-numarul de varfuri ale poligonului ,
+          "Raza Cercului"-raza cercului circumscris
+          "Forma"-schimba regulile de generare,
+          "Step"-unghiul dintre fiecare varf,
+          "Numar de repetari".
+Si apoi avem avem o secventa de cod care ne arata istoricul valorilor folsite. 
+```{html}
+# aici e interfata
+ui <- fluidPage(
+  #css
+  tags$style(HTML("
+      *{
+        font-family:system-ui;
+      }
+      p{
+      font-size:1.5rem;
+      }
+      }")),
+  useShinyjs(),
+  #aici apar functiile shinyjs din javascript(singurele functii care pot fi chemate din R)
+  extendShinyjs(text = jsCode, functions = c("addHistory")),
+  
+  headerPanel('Chaos Game'),
+  #numele noastre
+  h5(numeElevi),
+    sidebarPanel(
+      #inputurile
+      numericInput('nrVfInput', 'Numar Varfuri:', value=3,
+                   min=nrMinVf,max=nrMaxVf),
+      numericInput('razaInput', 'Raza Cercului:', value=175),
+      numericInput('formaInput','Forma:',min =1,max=3,value=1),
+      numericInput('stepInput','Step:',value=2,min=2,max=10),
+      numericInput('nrRepetInput','Numar repetari:',value=5000,max=50000),
+      # la apasarea butonului se executa programu
+      actionButton("button", "Go"),
+      #istoricul datelor rulate (se updateaza din js)
+      p(id="nrVfHistory",'Numar Varfuri:'),
+      p(id="razaHistory",'Raze:'),
+      p(id="formaHistory","Forma:"),
+      p(id="stepHistory","Step:"),
+      p(id="nrRepetHistory","Nr Repetari:")
+    ),
+    #outputul (canvas)
+      htmlOutput("chaosGame")
+    )
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Server contine  logica proiectului, in care ne folosim de variabilele de intrare fiind referintiate prin  input&dollar;nume_varibila (input&dollar;nrVfInput...) pentru a le modifica pe cele de iesire referiantiabile prin output&dollar;nume_variabila (output&dollar;chaosGame).
+
+```{r}
+#server <- function(input,output)
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functia "observeEvent" se apeleaza in momentul in care butonul este apasat si efectueaza urmatoarele secvente de cod.
+Aceasta secventa salveaza varibilele folosite de utilizator in istoric.
+```{js}
+    js$addHistory(input$nrVfInput, input$razaInput,
+                  input$formaInput,input$stepInput,input$nrRepetInput)
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Aici vom salva valroile introduse de utiliztor in variabilie auziliare.
+```{html}
+  nrVf=input$nrVfInput
+  forma=input$formaInput
+  raza=input$razaInput
+  step=input$stepInput
+  nrRepet=input$nrRepetInput
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Aceasta secventa de cod stilizeaza panoul
+```{css}
+ canvas{
+        position:absolute;
+        right:20%;
+        top:20%;
+        padding:2rem;
+ }
+
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Singleton-ul acesta e folosit pentru a importa o librarie care va fi folosita ulterior.
+```(r)
+singleton(tags$head(tags$script(src="https://cdn.jsdelivr.net/npm/p5@1.2.0/lib/p5.js")))
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;In urmatoarea secventa vom salva diferite varibile. Si anume:
+"xVf"-memoreaza pozitia varfurilor pe axa Ox,
+"yVf"-memoreaza pozitia varfurilor pe axa Oy,
+"pct"-memoreaza pozitia punctelor generate,
+"reps"-memoreaza numarul de repetari". Apoi in "pct" vom salva pozitia punctului initial din Chaos Game.
+
+```(js)
+var xVf = [];
+var yVf = [];
+// xVf si yVf memoreaza pozitia varfurilor "mari"
+var pct = [];
+// pct memoreaza pozitia punctelor generate
+var reps = ',nrRepet,';
+var width=400;
+var height=400
+//width si height memoreaza dimensiunea canvas-ului
+var pct = [width/2, height/2];
+//pct - pozitia primului punct din Chaos Game
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Aceasta functie creeaza canvas-ul pentru Chaos Game, punctul de pornire in centru canvasului, seteaza unghiul in grade in loc de radiani.
+```(js)
+console.log(pct)
+function setup() {
+  createCanvas(400, 400);
+  angleMode(DEGREES);
+  width=400;
+  height=400;
+  pct = [width/2, height/2];
+}
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functia shp1 creaza triunghiul Sierpinski in urmatorul mod: incepand din mijloc, se alege aleator un varf si punem un alt punct la jumatatea distantei (pentru s=2) dintre punctul initial si varful ales.
+```(js)
+function shp1(k,r,s){
+  //step este cu cat cresc unghiul pentru a aseza pe cerc varfurile
+  //angle este unghiul de start
+  let step = 360 / k;
+  let angle = 90;
+  
+  
+  background(0);
+  /fill seteaza culoarea pt desen (verde)
+  fill(0,255,0);
+  
+  for(let i = 1; i!=k+1;i++){
+    let x = width/2 + (r * cos(angle));
+    let y = height/2 - (r * sin(angle));
+    
+    xVf[i] = x;
+    yVf[i] = y;
+    
+    //creez un punct de raza 16 la pozitia (x y)
+    ellipse(x,y,16,16);
+    angle += step;
+  }
+  
+  //fill seteaza culoarea pt desen (alb)
+  fill(255);
+  //stroke seteaza culoarea liniilor ce urmeaza desenate (alb)
+  stroke(255);
+  for(let i = 1; i != reps+1; i++){
+    point(pct[0],pct[1]);
+    
+    // rVf este un varf aleator
+    let rVf = floor(random(1,k+1));
+    
+    //calculez coordonatele noului punct
+    pct[0] = ((s-1)*pct[0]+xVf[rVf])/s;
+    pct[1] = ((s-1)*pct[1]+yVf[rVf])/s;
+  }
+  
+}
+```
+![Exemplu forma1.](https://i.imgur.com/hYEz6N8.jpg)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functia shp2 creaza un "fulg", astfel: Incepand din mijloc, se alege aleator un varf spre care sa mergem jumatate din distanta (pentru s=2), insa varful ales trebuie sa fie diferit de cel precedent ales.
+```(js)
+function shp2(k,r,s){
+  let step = 360 / k;
+  let angle = 90;
+  
+  background(0);
+  fill(0,255,0);
+  
+  for(let i = 1; i!=k+1;i++){
+    let x = width/2 + (r * cos(angle));
+    let y = height/2 - (r * sin(angle));
+    
+    xVf[i] = x;
+    yVf[i] = y;
+    
+    ellipse(x,y,16,16);
+    angle += step;
+  }
+  
+  fill(255);
+  stroke(255);
+  //tine minte varful precedent ales
+  let prevVf = 0;
+  for(let i = 1; i != reps+1; i++){
+    //ellipse(pct[0],pct[1], 2, 2);
+    point(pct[0], pct[1]);
+    
+    let rVf = floor(random(1,k+1));
+    while(rVf == prevVf){
+      rVf = floor(random(1,k+1));
+    }
+    prevVf = rVf;
+    
+    pct[0] = ((s-1)*pct[0]+xVf[rVf])/s;
+    pct[1] = ((s-1)*pct[1]+yVf[rVf])/s;
+  }
+}
+```
+![Exemplu forma2.](https://i.imgur.com/TcYCtYG.jpg)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functia shp3 creaza un "fulg", astfel: Incepand din mijloc, se alege aleator un varf spre care sa mergem jumatate din distanta (pentru s=2), insa varful ales trebuie sa nu fie la stanga celui ales precedent.
+```(js)
+function shp3(k,r,s){
+  let step = 360 / k;
+  let angle = 90;
+  
+  background(0);
+  fill(0,255,0);
+  
+  for(let i = 1; i!=k+1;i++){
+    let x = width/2 + (r * cos(angle));
+    let y = height/2 - (r * sin(angle));
+    
+    xVf[i] = x;
+    yVf[i] = y;
+    
+    ellipse(x,y,16,16);
+    angle += step;
+  }
+  
+  fill(255);
+  stroke(255);
+  let prevVf = 0;
+  for(let i = 1; i != reps+1; i++){
+    //ellipse(pct[0],pct[1], 2, 2);
+    point(pct[0], pct[1]);
+    
+    let rVf = floor(random(1,k+1));
+    
+    if(prevVf-1 == 0) leftVf = k;
+    else leftVf = prevVf-1;
+    
+    while(rVf == leftVf){
+      rVf = floor(random(1,k+1));
+    }
+    prevVf = rVf;
+    
+    pct[0] = ((s-1)*pct[0]+xVf[rVf])/s;
+    pct[1] = ((s-1)*pct[1]+yVf[rVf])/s;
+  }
+}
+```
+![Exemplu forma3.](https://i.imgur.com/JhMrf9b.jpg)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Functia shp4 creaza forma urmatoare , astfel: Incepand din mijloc, se alege aleator un varf spre care sa mergem jumatate din distanta (pentru s=2), insa varful ales trebuie sa nu fie la 2 poztii stanga celui ales precedent.
+```{js}
+function shp4(k,r,s){
+  let step = 360 / k;
+  let angle = 90;
+  
+  background(0);
+  fill(0,255,0);
+  
+  for(let i = 1; i!=k+1;i++){
+    let x = width/2 + (r * cos(angle));
+    let y = height/2 - (r * sin(angle));
+    
+    xVf[i] = x;
+    yVf[i] = y;
+    
+    ellipse(x,y,16,16);
+    angle += step;
+  }
+  
+  fill(255);
+  stroke(255);
+  let prevVf = 0;
+  for(let i = 1; i != reps+1; i++){
+    //ellipse(pct[0],pct[1], 2, 2);
+    point(pct[0], pct[1]);
+    
+    let rVf = floor(random(1,k+1));
+    
+    if(prevVf-2 == 0) leftVf = k;
+    else if(prevVf-2 == -1) leftVf = k-1;
+    else leftVf = prevVf-2;
+    
+    while(rVf == leftVf){
+      rVf = floor(random(1,k+1));
+    }
+    prevVf = rVf;
+    
+    pct[0] = ((s-1)*pct[0]+xVf[rVf])/s;
+    pct[1] = ((s-1)*pct[1]+yVf[rVf])/s;
+  }
+}
+```
+![Exemplu forma4.](https://i.imgur.com/SJhPpkP.jpg)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Draw e o functie care se apeleaza constant, aceasta apeleaza functia shp aceasta folosind parametri de intrare dati de utilizator.
+```(js)
+function draw() {
+  shp',forma,'(',nrVf,',',raza,',',step,');
+}
+```
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;In timp ce ne documentam pentru proiect am gasit cateva rezultate interasante.
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pentru aceste rezultate am setat step-ul ca fiind 2/3 si raza cercului 70 pentru a putea observa rezultatul integral.
+
+![](https://i.imgur.com/iwqtXdN.jpg)
+
+![](https://i.imgur.com/h4C0qo4.jpg)
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Pentru aceste rezultate am setat step-ul ca fiind constanta &#632;.
+
+![](https://i.imgur.com/YkO0USE.jpg)
+
+![](https://i.imgur.com/MsxUXlJ.jpg)
