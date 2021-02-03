@@ -3,7 +3,6 @@ library(shiny)
 #librarie pt js
 library(shinyjs)
 
-library(shinydashboard)
 library(rmarkdown)
 
 #Nr minim varfuri
@@ -59,7 +58,7 @@ ui <- fluidPage(
       numericInput('nrVfInput', 'Numar Varfuri:', value=3,
                    min=nrMinVf,max=nrMaxVf),
       numericInput('razaInput', 'Raza Cercului:', value=175),
-      numericInput('formaInput','Forma:',min =1,max=3,value=1),
+      numericInput('formaInput','Forma:',min =1,max=4,value=1),
       numericInput('stepInput','Step:',value=2,min=2,max=10),
       numericInput('nrRepetInput','Numar repetari:',value=5000,max=50000),
       # la apasarea butonului se executa programu
@@ -75,7 +74,9 @@ ui <- fluidPage(
       htmlOutput("chaosGame")
     )
 
-#aici e logica
+#server contine logica proiectului, in care ne folosim de variabilele de intrare fiind referintiate prin
+# input$nume_variabila (input$nrVfInput...) pentru a le modifica pe cele de iesire referiantiabile prin output$nume_variabila (output$chaosGame)
+
 server <- function(input,output
 ) {
   #cand apas pe butonul #button se executa functia shinyjs.draw cu actualele inputuri si in output se pune canvas-ul cu chaos game 
@@ -105,21 +106,16 @@ server <- function(input,output
         
         ,singleton(tags$head(tags$script(paste('var xVf = [];
 var yVf = [];
-// xVf si yVf memoreaza pozitia varfurilor "mari"
 var pct = [];
-// pct memoreaza pozitia punctelor generate
 var reps = ',nrRepet,';
 var width=400;
 var height=400
-//width si height memoreaza dimensiunea canvas-ului
 var pct = [width/2, height/2];
-//pct - pozitia primului punct din Chaos Game
 
 console.log(pct)
 function setup() {
   createCanvas(400, 400);
   
-  //seteaza modul unghiurilor in GRADE
   angleMode(DEGREES);
   width=400;
   height=400;
@@ -129,14 +125,10 @@ function setup() {
 se alege aleator un varf si punem un alt punct la jumatatea distantei dintre punctul
 initial si varful ales. */
 function shp1(k,r,s){
-  //step este cu cat cresc unghiul pentru a aseza pe cerc varfurile
-  //angle este unghiul de start
   let step = 360 / k;
   let angle = 90;
   
-  
   background(0);
-  /fill seteaza culoarea pt desen (verde)
   fill(0,255,0);
   
   for(let i = 1; i!=k+1;i++){
@@ -146,22 +138,17 @@ function shp1(k,r,s){
     xVf[i] = x;
     yVf[i] = y;
     
-    //creez un punct de raza 16 la pozitia (x y)
     ellipse(x,y,16,16);
     angle += step;
   }
   
-  //fill seteaza culoarea pt desen (alb)
   fill(255);
-  //stroke seteaza culoarea liniilor ce urmeaza desenate (alb)
   stroke(255);
   for(let i = 1; i != reps+1; i++){
     point(pct[0],pct[1]);
     
-    // rVf este un varf aleator
     let rVf = floor(random(1,k+1));
     
-    //calculez coordonatele noului punct
     pct[0] = ((s-1)*pct[0]+xVf[rVf])/s;
     pct[1] = ((s-1)*pct[1]+yVf[rVf])/s;
   }
@@ -189,7 +176,6 @@ function shp2(k,r,s){
   
   fill(255);
   stroke(255);
-  //tine minte varful precedent ales
   let prevVf = 0;
   for(let i = 1; i != reps+1; i++){
     //ellipse(pct[0],pct[1], 2, 2);
@@ -246,6 +232,46 @@ function shp3(k,r,s){
     pct[1] = ((s-1)*pct[1]+yVf[rVf])/s;
   }
 }
+function shp4(k,r,s){
+  let step = 360 / k;
+  let angle = 90;
+  
+  background(0);
+  fill(0,255,0);
+  
+  for(let i = 1; i!=k+1;i++){
+    let x = width/2 + (r * cos(angle));
+    let y = height/2 - (r * sin(angle));
+    
+    xVf[i] = x;
+    yVf[i] = y;
+    
+    ellipse(x,y,16,16);
+    angle += step;
+  }
+  
+  fill(255);
+  stroke(255);
+  let prevVf = 0;
+  for(let i = 1; i != reps+1; i++){
+    //ellipse(pct[0],pct[1], 2, 2);
+    point(pct[0], pct[1]);
+    
+    let rVf = floor(random(1,k+1));
+    
+    if(prevVf-2 == 0) leftVf = k;
+    else if(prevVf-2 == -1) leftVf = k-1;
+    else leftVf = prevVf-2;
+    
+    while(rVf == leftVf){
+      rVf = floor(random(1,k+1));
+    }
+    prevVf = rVf;
+    
+    pct[0] = ((s-1)*pct[0]+xVf[rVf])/s;
+    pct[1] = ((s-1)*pct[1]+yVf[rVf])/s;
+  }
+}
 function draw() {
   shp',forma,'(',nrVf,',',raza,',',step,');
 }',sep=""))))
@@ -255,4 +281,3 @@ function draw() {
 }
 
 shinyApp(ui = ui, server = server)
-
