@@ -232,6 +232,11 @@ function shp3(k,r,s){
     pct[1] = ((s-1)*pct[1]+yVf[rVf])/s;
   }
 }
+/*
+Functia shp4 creaza o forma, astfel: Incepand din mijloc, se alege aleator un varf 
+spre care sa mergem jumatate din distanta (pentru s=2), insa varful 
+ales trebuie sa nu fie la 2 poztii stanga celui ales precedent.
+*/
 function shp4(k,r,s){
   let step = 360 / k;
   let angle = 90;
